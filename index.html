@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Caixa Eletrônico</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            margin: 20px 0;
+        }
+        .menu-suspenso, .content-saldo, .content-saque, .content-deposito {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin: 10px;
+            border-radius: 8px;
+        }
+        .menu-suspenso.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .content {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
+        p {
+            margin-top: 20px;
+            color: #333;
+        }
+        @media (max-width: 600px) {
+            body {
+                font-size: 16px;
+                padding: 10px;
+            }
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Simulador de Caixa Eletrônico</h1>
+    <div class="menu-suspenso active">
+        <button id="consultar-saldo">Consultar Saldo</button>
+        <button id="realizar-saque">Realizar Saque</button>
+        <button id="realizar-deposito">Realizar Depósito</button>
+    </div>
+    <div class="content content-saldo">
+        <h2>Olá, seu saldo é de <strong>R$<span class="saldo">0,00</span></strong></h2>
+        <button class="voltar">Voltar</button>
+    </div>
+    <div class="content content-saque">
+        <h2>Realizar Saque</h2>
+        <h3>Saldo disponível para saque R$ <span class="saldo">0,00</span></h3>
+        <label for="valor-saque">Valor do saque</label>
+        <input type="number" id="valor-saque" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+        <button id="sacar-button">Sacar</button>
+        <button class="voltar">Voltar</button>
+        <p id="resultado-saque"></p>
+    </div>
+    <div class="content content-deposito">
+        <h2>Realizar Depósito</h2>
+        <h3>Saldo atual R$<span class="saldo">0,00</span></h3>
+        <label for="valor-deposito">Valor do Depósito</label>
+        <input type="number" id="valor-deposito" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+        <button id="button-deposito">Depositar</button>
+        <button class="voltar">Voltar</button>
+        <p id="resultado-deposito"></p>
+    </div>
+    <script>
+        const conta = 123456;
+        const senha = 54321;
+        let saldo = 1000;
+
+        const menuSuspenso = document.querySelector('.menu-suspenso');
+        const contentSaldo = document.querySelector('.content-saldo');
+        const contentSaque = document.querySelector('.content-saque');
+        const contentDeposito = document.querySelector('.content-deposito');
+
+        document.getElementById('consultar-saldo').addEventListener('click', () => {
+            toggleContent(menuSuspenso, contentSaldo);
+            atualizarSaldo();
+        });
+
+        document.getElementById('realizar-saque').addEventListener('click', () => {
+            toggleContent(menuSuspenso, contentSaque);
+            atualizarSaldo();
+
+            const valorsaqueInput = document.getElementById('valor-saque');
+            document.getElementById('sacar-button').addEventListener('click', () => {
+                const valorsaque = parseFloat(valorsaqueInput.value);
+                const resultadoSaque = document.getElementById('resultado-saque');
+                try {
+                    if (isNaN(valorsaque) || valorsaque <= 0) {
+                        throw new Error('Por favor, insira um valor válido para saque!');
+                    } else if (valorsaque > saldo) {
+                        throw new Error('Valor do saque é superior ao saldo!');
+                    } else {
+                        saldo -= valorsaque;
+                        resultadoSaque.textContent = 'Saque efetuado com sucesso';
+                        resultadoSaque.style.color = 'green';
+                        atualizarSaldo();
+                    }
+                } catch (error) {
+                    resultadoSaque.textContent = error.message;
+                    resultadoSaque.style.color = 'red';
+                }
+            });
+        });
+
+        document.getElementById('realizar-deposito').addEventListener('click', () => {
+            toggleContent(menuSuspenso, contentDeposito);
+            atualizarSaldo();
+
+            const valorInputDeposito = document.getElementById('valor-deposito');
+            document.getElementById('button-deposito').addEventListener('click', () => {
+                const valorDeposito = parseFloat(valorInputDeposito.value);
+                const resultadoDeposito = document.getElementById('resultado-deposito');
+                try {
+                    if (isNaN(valorDeposito) || valorDeposito <= 0) {
+                        throw new Error('Valor de depósito inválido!');
+                    } else {
+                        saldo += valorDeposito;
+                        resultadoDeposito.textContent = 'Depósito efetuado com sucesso';
+                        resultadoDeposito.style.color = 'green';
+                        atualizarSaldo();
+                    }
+                } catch (error) {
+                    resultadoDeposito.textContent = error.message;
+                    resultadoDeposito.style.color = 'red';
+                }
+            });
+        });
+
+        document.querySelectorAll('.voltar').forEach(button => {
+            button.addEventListener('click', () => {
+                toggleContent(document.querySelector('.content.active'), menuSuspenso);
+            });
+        });
+
+        function toggleContent(hideElement, showElement) {
+            hideElement.classList.remove('active');
+            showElement.classList.add('active');
+        }
+
+        function atualizarSaldo() {
+            document.querySelectorAll('.saldo').forEach(element => {
+                element.innerHTML = saldo.toFixed(2);
+            });
+        }
+    </script>
+</body>
+</html>
